@@ -41,8 +41,42 @@ def get_data_from_url(url_base, **kwargs):
 def collect_pediatric_data(n_records):
     n_iterations = math.ceil(n_records/100)
     all_pediatric = pd.DataFrame()
-    for i in tnrange(50, desc='Progress'):
+    for i in tnrange(n_iterations, desc='Progress'):
         url = f"https://api.fda.gov/drug/event.json?search=patient.patientagegroup:3&limit=100&skip={i*100}"
-        data = get_data_from_url(url)
+        json_data = requests.get(url).json()
+        data = pd.json_normalize(json_data.get('results'))
         all_pediatric = all_pediatric.append(data)
     return all_pediatric
+
+def flatten_series_list(myseries):
+    temp = pd.DataFrame(myseries.to_list())
+    flattened_series_df = pd.DataFrame(temp.loc[:,0].to_list()) #take only first reported value 
+    return flattened_series_df
+
+def flatten_series_dict(myseries):
+    temp = pd.DataFrame(myseries.to_dict())
+    flattened_series_df = pd.DataFrame(temp).transpose()
+    for col in flattened_series_df.columns:
+        flattened_series_df[col] = flattened_series_df[col].map(lambda x: x[0], na_action='ignore')
+    return flattened_series_df
+
+
+def flatten_dataframe(df):
+    # check for unique index
+    expandable_columns = ['patient.reaction',
+                         'patient.drug',
+                         'openfda'
+                        ]
+    flattened_df = df 
+    for col_name in expandable_columns:
+        if col_name != 'openfda':
+            flat_series_df = flatten_series_list(flattened_df[col_name])
+            flat_series_df.reset_index(drop=True, inplace=True)
+            flattened_df = pd.concat([flattened_df,flat_series_df], axis=1, sort=False)
+        else:
+            flat_series_df = flatten_series_dict(flattened_df[col_name])
+            flat_series_df.reset_index(drop=True, inplace=True)
+            flattened_df = pd.concat([flattened_df,flat_series_df], axis=1, sort=False)
+    assert len(df) == len(flattened_df), 'Flattening dataframe failed.'
+    return flattened_df
+        
