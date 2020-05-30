@@ -46,7 +46,6 @@ def remove_nan_columns(df,perc):
     
 def fix_data_types(df):
     columns = list(set(df.columns) - {'occurcountry',
-                                      'patient.patientonsetageunit',
                                       'reactionmeddrapt',
                                       'route'}
                   )
@@ -62,8 +61,10 @@ def reformat_onsetage(df):
     # check first that there is always a unit specified for patientage
     assert df[col_unit].isna().sum() == df[col_age].isna().sum(), 'Not all patient ages have units.'
 
-    df.loc[df[col_unit]==802, col_age_year] = df.loc[df[col_unit]==802, col_age]/12
-    df.loc[df[col_unit]==801, col_age_year] = df.loc[df[col_unit]==801, col_age]
+    if (df.isin([802]).any().loc[col_unit]):
+        df.loc[df[col_unit]==802, col_age_year] = df.loc[df[col_unit]==802, col_age]/12
+    if (df.isin([801]).any().loc[col_unit]):
+        df.loc[df[col_unit]==801, col_age_year] = df.loc[df[col_unit]==801, col_age]
     
     df.drop(col_unit, axis=1, inplace=True)
     df.drop(col_age, axis=1, inplace=True)
