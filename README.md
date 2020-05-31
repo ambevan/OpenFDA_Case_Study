@@ -12,4 +12,5 @@ It also contains three python modules ('collect_data.py', 'clean_data.py' and 'p
 It additionally contains a file 'method_notes.pdf' which, in very brief and informal terms, describes the approach that I took. This file was created primarily for my own reference throughout the task but I include it here for reference.
 
 
+The suggested reading order is notebook 1. 'Exploring_OpenFDA_Adverse_Reactions.ipynb' followed by notebook 2. 'Severity of adverse reactions in children.ipynb'. The method notes (method_notes.pdf) could then be read if of interest.
 
